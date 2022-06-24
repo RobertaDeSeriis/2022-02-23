@@ -62,7 +62,7 @@ public class FXMLController {
     	String citta = this.cmbCitta.getValue();
     	Business locale = this.cmbLocale.getValue();
     	if(citta != null && locale!=null) {
-    		txtResult.appendText(model.creaGrafo(locale.toString()));
+    		txtResult.appendText(model.creaGrafo(locale.getBusinessId()));
     	}
     	else if (citta==null || locale==null)
     		txtResult.setText("Inserire citta e/o locale");
