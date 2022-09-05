@@ -15,13 +15,14 @@ import it.polito.tdp.yelp.model.User;
 public class YelpDao {
 	
 	
-	public List<Business> getAllBusiness(){
-		String sql = "SELECT * FROM Business";
+	public List<Business> getAllBusiness(String city){
+		String sql = "SELECT * FROM Business where city=? order by business_name ";
 		List<Business> result = new ArrayList<Business>();
 		Connection conn = DBConnect.getConnection();
 
 		try {
 			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, city);
 			ResultSet res = st.executeQuery();
 			while (res.next()) {
 
@@ -113,16 +114,18 @@ public class YelpDao {
 		}
 	}
 	
-	public List<String> getCitta(){
-		String sql = "SELECT DISTINCT city FROM Business order by city";
-		List<String> result = new ArrayList<String>();
+	public List<String> getCity(){
+		String sql = "SELECT Distinct city FROM Business order by city ";
+		List<String> result = new ArrayList<>();
 		Connection conn = DBConnect.getConnection();
 
 		try {
 			PreparedStatement st = conn.prepareStatement(sql);
 			ResultSet res = st.executeQuery();
 			while (res.next()) {
+
 				result.add(res.getString("city"));
+				
 			}
 			res.close();
 			st.close();
@@ -135,52 +138,20 @@ public class YelpDao {
 		}
 	}
 	
-	public List<Business> getLocaliCitta(String c){
-		String sql = "SELECT DISTINCT * FROM Business WHERE city=? order by business.business_name ";
-		List<Business> result = new ArrayList<Business>();
-		Connection conn = DBConnect.getConnection();
-		
-		try {
-			PreparedStatement st = conn.prepareStatement(sql);
-			st.setString(1, c);
-			ResultSet res = st.executeQuery();
-			while (res.next()) {
-				Business business = new Business(res.getString("business_id"), 
-						res.getString("full_address"),
-						res.getString("active"),
-						res.getString("categories"),
-						res.getString("city"),
-						res.getInt("review_count"),
-						res.getString("business_name"),
-						res.getString("neighborhoods"),
-						res.getDouble("latitude"),
-						res.getDouble("longitude"),
-						res.getString("state"),
-						res.getDouble("stars"));
-				result.add(business);
-			}
-			res.close();
-			st.close();
-			conn.close();
-			return result;
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	//VERTICI
-	public List<Review> getVertici(String l){
+	public List<Review> getVertici(String city, Business locale){
 		String sql = "SELECT DISTINCT r.* "
-				+ "		FROM reviews r, business b "
-				+ "		WHERE  r.business_id=b.business_id AND b.business_id=? ";
-		List<Review> result = new ArrayList<Review>();
+				+ "FROM reviews r, business b "
+				+ "WHERE r.business_id=b.business_id "
+				+ "AND b.city=? "
+				+ "AND  b.business_name=? "
+				+ "GROUP BY r.review_id, r.review_date ";
+		List<Review> result = new ArrayList<>();
 		Connection conn = DBConnect.getConnection();
 
 		try {
 			PreparedStatement st = conn.prepareStatement(sql);
-			st.setString(1, l);
+			st.setString(1, city);
+			st.setString(2, locale.getBusinessName());
 			ResultSet res = st.executeQuery();
 			while (res.next()) {
 
@@ -194,6 +165,7 @@ public class YelpDao {
 						res.getInt("votes_cool"),
 						res.getString("review_text"));
 				result.add(review);
+				
 			}
 			res.close();
 			st.close();

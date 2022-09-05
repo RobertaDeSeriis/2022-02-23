@@ -5,6 +5,7 @@
 package it.polito.tdp.yelp;
 
 import java.net.URL;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -45,31 +46,29 @@ public class FXMLController {
     
     @FXML
     void doRiempiLocali(ActionEvent event) {
-    	this.cmbLocale.getItems().clear();
-    	String citta = this.cmbCitta.getValue();
-    	if(citta != null) {
-    		//TODO popolare la tendina dei locali per la città selezionata
-    		
-    		
-    		cmbLocale.getItems().addAll(model.getLocali(cmbCitta.getValue()));
-    	}
+    	this.cmbLocale.getItems().addAll(model.getLocali(this.cmbCitta.getValue()));
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
-    	
-    	String citta = this.cmbCitta.getValue();
-    	Business locale = this.cmbLocale.getValue();
-    	if(citta != null && locale!=null) {
-    		txtResult.appendText(model.creaGrafo(locale.getBusinessId()));
-    	}
-    	else if (citta==null || locale==null)
-    		txtResult.setText("Inserire citta e/o locale");
-    	}
+    	String city= this.cmbCitta.getValue();
+    	Business locale= this.cmbLocale.getValue();
+    	txtResult.appendText(model.creaGrafo(city, locale));
+    	txtResult.appendText(model.getUscenti().toString());
+    }
 
     @FXML
     void doTrovaMiglioramento(ActionEvent event) {
+    	
+    	txtResult.clear();
+    
+    	List<Review> percorso = this.model.trovaPercorso();
+    	txtResult.appendText("PERCORSO PIU' LUNGO: " + percorso.size());
+    	for(Review v : percorso) {
+    		txtResult.appendText("\n"+v);
+    	}
+    	txtResult.appendText("\n"+ChronoUnit.DAYS.between(model.getBest().get(model.getBest().size()-1).getDate(),model.getBest().get(0).getDate()));
     	
     }
 
@@ -86,5 +85,6 @@ public class FXMLController {
     public void setModel(Model model) {
     	this.model = model;
     	this.cmbCitta.getItems().addAll(model.getCity());
+    	
     }
 }
